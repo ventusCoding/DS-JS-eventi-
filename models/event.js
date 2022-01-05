@@ -16,7 +16,12 @@ const EventSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true
-    }
+    },
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        require: [true, 'Event must belong to a User!'],
+      },
 })
 
 let Event = mongoose.model('Event',EventSchema,'events')

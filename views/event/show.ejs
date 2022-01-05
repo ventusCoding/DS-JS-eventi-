@@ -13,9 +13,13 @@
                 <p><%=event.location%></p>
                 <p><span class="badge badge-secondary"><%=event.date%></span></p>
                 
+ 
+                    <% if(event.user.toString() ===  user._id.toString()) {%>
+                        <a href="<%= '/events/edit/' + event.id %>" class="btn btn-primary">Edit</a>
+                        <button class="btn btn-danger" onclick="deleteEvent()" id="deleteBtn" data-id="<%= event.id%>">Delete</button>  
+                    <% }%>
 
-                <a href="<%= '/events/edit/' + event.id %>" class="btn btn-primary">Edit</a>
-                <button class="btn btn-danger" onclick="deleteEvent()" id="deleteBtn" data-id="<%= event.id%>">Delete</button>                
+             
             </div>
         </div>
         

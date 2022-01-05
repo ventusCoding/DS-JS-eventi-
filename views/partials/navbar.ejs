@@ -1,6 +1,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Node events</a>
+    <a class="navbar-brand" href="#">
+      <img width="50" height="60" src="https://firebasestorage.googleapis.com/v0/b/social-network-react-nat-a4593.appspot.com/o/logo.png?alt=media&token=99fa13e3-fc31-41da-9fb5-ee620f758da1" class="responsive-img" />
+    </a>
     <button
       class="navbar-toggler"
       type="button"
@@ -15,10 +17,9 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-link active" aria-current="page" href="/events">Home</a>
-        <a class="nav-link" href="/events/create">Add event</a>
-
         <% if (typeof user != 'undefined') { %>
         <a class="nav-link" href="/profile">Profile</a>
+        <a class="nav-link" href="/events/create">Add event</a>
         <% } else { %>
         <a class="nav-link" href="/users/login">Login</a>
         <a class="nav-link" href="/users/register">Register</a>

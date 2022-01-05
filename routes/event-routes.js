@@ -1,166 +1,182 @@
-const express = require("express")
-const router = express.Router()
-const Event = require('../models/event')
-const { check, validationResult } = require('express-validator/check')
-const moment = require('moment');
+const express = require("express");
+const router = express.Router();
+const Event = require("../models/event");
+const { check, validationResult } = require("express-validator/check");
+const moment = require("moment");
 moment().format();
 
 // route to home events
-router.get('/', (req, res) => {
-    Event.find({}, (err, events) => {
-        //     res.json(events)
-        let chunk = []
-        let chunkSize = 3
-        for (let i = 0; i < events.length; i += chunkSize) {
-            chunk.push(events.slice(i, chunkSize + i))
-        }
-        //res.json(chunk)
-        res.render('event/index', {
-            chunk: chunk,
-            message: req.flash('info'),
-            user:req.user
-        })
-    })
+router.get("/", (req, res) => {
+  Event.find({}, (err, events) => {
+    //     res.json(events)
 
-})
+    let chunk = [];
+    let chunkSize = 3;
+
+    for (let i = 0; i < events.length; i += chunkSize) {
+      chunk.push(events.slice(i, chunkSize + i));
+    }
+
+    //res.json(chunk)
+    res.render("event/index", {
+      chunk: chunk,
+      message: req.flash("info"),
+      user: req.user,
+    });
+  });
+});
 
 // create new event
-router.get('/create', (req,res)=> {
+router.get("/create", (req, res) => {
+  if (!req.user) {
+    res.redirect("/users/login");
+  }
 
-    res.render('event/create', {
-        errors: req.flash('errors'),
-        user:req.user
-    })
-})
-
+  res.render("event/create", {
+    errors: req.flash("errors"),
+    user: req.user,
+  });
+});
 
 // save event to db
-router.post('/create', [
-    check('title').isLength({min: 5}).withMessage('Title should be more than 5 char'),
-    check('description').isLength({min: 5}).withMessage('Description should be more than 5 char'),
-    check('location').isLength({min: 3}).withMessage('Location should be more than 5 char'),
-    check('date').isLength({min: 5}).withMessage('Date should valid Date'),
+router.post(
+  "/create",
+  [
+    check("title")
+      .isLength({ min: 5 })
+      .withMessage("Title should be more than 5 char"),
+    check("description")
+      .isLength({ min: 5 })
+      .withMessage("Description should be more than 5 char"),
+    check("location")
+      .isLength({ min: 3 })
+      .withMessage("Location should be more than 5 char"),
+    check("date").isLength({ min: 5 }).withMessage("Date should valid Date"),
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
 
-] , (req,res)=> {
-
-    const errors = validationResult(req)
-
-    if( !errors.isEmpty()) {
-     
-        req.flash('errors',errors.array())
-        res.redirect('/events/create')
-
+    if (!errors.isEmpty()) {
+      req.flash("errors", errors.array());
+      res.redirect("/events/create");
     } else {
-        
-        let newEvent = new Event({
-            title: req.body.title,
-            description: req.body.description,
-            date: req.body.date,
-            location: req.body.location,
-            created_at: Date.now()
-        })
+      let newEvent = new Event({
+        title: req.body.title,
+        description: req.body.description,
+        date: req.body.date,
+        location: req.body.location,
+        created_at: Date.now(),
+        user: req.user,
+      });
 
-        newEvent.save( (err)=> {
-            if(!err) {
-                console.log('event was added')
-                req.flash('info', ' The event was created successfuly')
-                res.redirect('/events')
-
-            } else {
-                console.log(err)
-            }
-        })
+      newEvent.save((err) => {
+        if (!err) {
+          console.log("event was added");
+          req.flash("info", " The event was created successfuly");
+          res.redirect("/events");
+        } else {
+          console.log(err);
+        }
+      });
     }
-   
-})
-
+  }
+);
 
 // show single event
-router.get('/:id', (req, res) => {
-    Event.findOne({ _id: req.params.id }, (err, event) => {
-        if (!err) {
+router.get("/:id", (req, res) => {
+  if (!req.user) {
+    res.redirect("/users/login");
+  }
 
-            res.render('event/show', {
-                event: event,
-                user:req.user
-            })
-
-        } else {
-            console.log(err)
-        }
-    })
-})
+  Event.findOne({ _id: req.params.id }, (err, event) => {
+    if (!err) {
+      res.render("event/show", {
+        event: event,
+        user: req.user,
+      });
+    } else {
+      console.log(err);
+    }
+  });
+});
 
 // edit route
 
-router.get('/edit/:id', (req,res)=> {
+router.get("/edit/:id", (req, res) => {
+  if (!req.user) {
+    res.redirect("/users/login");
+  }
 
-    Event.findOne({_id: req.params.id}, (err,event)=> {
-        
-        if(!err) {
-       
-         res.render('event/edit', {
-             event: event,
-             eventDate: moment(event.date).format('YYYY-MM-DD')
-         })
- 
-        } else {
-            console.log(err)
-        }
-     
-     })
-})
-
-router.post('/update',[
-    check('title').isLength({min: 5}).withMessage('Title should be more than 5 char'),
-    check('description').isLength({min: 5}).withMessage('Description should be more than 5 char'),
-    check('location').isLength({min: 3}).withMessage('Location should be more than 5 char'),
-    check('date').isLength({min: 5}).withMessage('Date should valid Date'),
-
-], (req,res)=> {
-    
-    const errors = validationResult(req)
-    if( !errors.isEmpty()) {
-       
-        req.flash('errors',errors.array())
-        res.redirect('/events/edit/' + req.body.id)
+  Event.findOne({ _id: req.params.id }, (err, event) => {
+    if (!err) {
+      res.render("event/edit", {
+        event: event,
+        eventDate: moment(event.date).format("YYYY-MM-DD"),
+        user: req.user,
+      });
     } else {
-       // crete obj
-       let newfeilds = {
-           title: req.body.title,
-           description: req.body.description,
-           location: req.body.location,
-           date: req.body.date
-       }
-       let query = {_id: req.body.id}
-
-       Event.updateOne(query, newfeilds, (err)=> {
-           if(!err) {
-               req.flash('info', " The event was updated successfuly"),
-               res.redirect('/events/edit/' + req.body.id)
-           } else {
-               console.log(err) 
-           }
-       })
+      console.log(err);
     }
-})
+  });
+});
+
+router.post(
+  "/update",
+  [
+    check("title")
+      .isLength({ min: 5 })
+      .withMessage("Title should be more than 5 char"),
+    check("description")
+      .isLength({ min: 5 })
+      .withMessage("Description should be more than 5 char"),
+    check("location")
+      .isLength({ min: 3 })
+      .withMessage("Location should be more than 5 char"),
+    check("date").isLength({ min: 5 }).withMessage("Date should valid Date"),
+  ],
+  (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      req.flash("errors", errors.array());
+      res.redirect("/events/edit/" + req.body.id);
+    } else {
+      // crete obj
+      let newfeilds = {
+        title: req.body.title,
+        description: req.body.description,
+        location: req.body.location,
+        date: req.body.date,
+      };
+      let query = { _id: req.body.id };
+
+      Event.updateOne(query, newfeilds, (err) => {
+        if (!err) {
+          req.flash("info", " The event was updated successfuly"),
+            res.redirect("/events/edit/" + req.body.id);
+        } else {
+          console.log(err);
+        }
+      });
+    }
+  }
+);
 
 //delete event
 
-router.delete('/delete/:id', (req,res)=> {
+router.delete("/delete/:id", (req, res) => {
+  if (!req.user) {
+    res.redirect("/users/login");
+  }
 
-    let query = {_id: req.params.id}
+  let query = { _id: req.params.id };
 
-    Event.deleteOne(query, (err)=> {
+  Event.deleteOne(query, (err) => {
+    if (!err) {
+      res.status(200).json("deleted");
+    } else {
+      res.status(404).json("There was an error .event was not deleted");
+    }
+  });
+});
 
-        if(!err) {
-            res.status(200).json('deleted')
-        } else {
-            res.status(404).json('There was an error .event was not deleted')
-        }
-    })
-})
-
-
-module.exports = router
-
+module.exports = router;

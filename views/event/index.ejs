@@ -7,7 +7,9 @@
                     <%- include('../partials/flashMessages') -%>
                 </div>
             </div>
-
+            <% if(chunk.length === 0) {%>
+                    no event
+                <% }%>
             <% chunk.forEach((events)=> {%>
                 <div class="row mt-3">
                     <% events.forEach((event)=> {%>
